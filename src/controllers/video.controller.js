@@ -47,6 +47,11 @@ async function Compress(video){
 
             try {
 
+
+                console.log("Go Compress->", video);
+                console.log(`public/files/2/${video}`)
+
+
                await exec(`ffmpeg -i public/files/2/${video} -r 30 -s 960x540 public/files/2/${video}`);
 
             } catch (error) {

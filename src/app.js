@@ -5,6 +5,7 @@ import pkg from '../package.json';
 const app = express();
 
 import HistoriRouter from './routes/history.routes';
+import VideoRouter from './routes/video.routes';
 
 app.set('pkg', pkg);
 
@@ -17,6 +18,8 @@ app.get('/',(req,res) =>{
 })
 
 app.use('/histori',HistoriRouter);
+
+app.use('/video',VideoRouter);
 
 
 export default app;

@@ -1,9 +1,30 @@
 
-export const transformPost = (req,res) =>{
+const Jimp = require("jimp");
+const fs = require("fs-extra");
+const util = require("util");
+const path = require('path');
+export const transformPost = async (req,res) =>{
 
-    console.log(req.body)
-    return res.status(200).send(req.video)
+    
+      // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+      let sampleFile = req.files.video;
+    
+      // Use the mv() method to place the file somewhere on your server
+      sampleFile.mv(path.join(__dirname+'/../../public/files/2/')+sampleFile.name, function(err) {
+        if(err){
 
+            res.status(404).json(err);
+
+        }else{
+
+            Compress(sampleFile.name)
+
+            
+                
+
+        }
+
+      });
 
 
 
@@ -11,74 +32,67 @@ export const transformPost = (req,res) =>{
 
 export const TransformVideo = (req,res) =>{
 
-    // Import dependencies
-const Jimp = require("jimp");
-const fs = require("fs-extra");
-const util = require("util");
 
-const exec = util.promisify(require("child_process").exec);
+    
+}
 
-let EDFile = req.files.file
-EDFile.mv(`./files/${EDFile.name}`,err => {
-    if(err) return res.status(500).send({ message : err })
-        return res.status(200).send({ message : 'File upload' })
-})
+async function Compress(video){
 
-const debug = false;
-const videoEncoder = "h264"; // mpeg4 libvpx
-const input = "WhatsApp Video 2020-12-18 at 09.51.00.mp4";
-const output = "output.mp4";
+                const exec = util.promisify(require("child_process").exec);
 
-(async function () {
+                const debug = false;
+                const videoEncoder = "h264"; // mpeg4 libvpx
+                const input = path.join(__dirname+'/../../public/files/2/')+video;
+                const output = path.join(__dirname+'/../../public/files/2/')+"opt"+video;
 
-    try {
+                try {
 
-        console.log("Initializing temporary files");
-        await fs.mkdir("temp");
-        await fs.mkdir("temp/raw-frames");
-        await fs.mkdir("temp/edited-frames");
+                    console.log("Initializing temporary files");
+                    await fs.mkdir("temp");
+                    await fs.mkdir("temp/raw-frames");
+                    await fs.mkdir("temp/edited-frames");
 
-        console.log("Decoding");
-        await exec(`ffmpeg -i ${input} temp/raw-frames/%d.png`);
+                    console.log("Decoding");
+                    await exec(`ffmpeg -i ${input} temp/raw-frames/%d.png`);
 
-        console.log("Rendering");
-        const frames = fs.readdirSync("temp/raw-frames");
+                    console.log("Rendering");
+                    const frames = fs.readdirSync("temp/raw-frames");
 
-        for (let count = 1; count <= frames.length; count++) {
+                    for (let count = 1; count <= frames.length; count++) {
 
-            // Read the frame
-            let frame = await Jimp.read(`temp/raw-frames/${count}.png`);
+                        // Read the frame
+                        let frame = await Jimp.read(`temp/raw-frames/${count}.png`);
 
-            // Modified the frame
-            frame = await onFrame(frame, count);
+                        // Modified the frame
+                        frame = await onFrame(frame, count);
 
-            // Save the frame
-            await frame.writeAsync(`temp/edited-frames/${count}.png`);
+                        // Save the frame
+                        await frame.writeAsync(`temp/edited-frames/${count}.png`);
 
-        }
+                    }
 
-        console.log("Encoding");
-        await exec(`ffmpeg -start_number 1 -i temp/edited-frames/%d.png -vcodec ${videoEncoder} -filter:v "setpts=0.5*PTS" temp/no-audio.mp4`);
+                    console.log("Encoding");
+                    await exec(`ffmpeg -start_number 1 -i temp/edited-frames/%d.png -vcodec ${videoEncoder} -filter:v "setpts=0.5*PTS" temp/no-audio.mp4`);
 
-        console.log("Adding audio");
-        await exec(`ffmpeg -i temp/no-audio.mp4 -i input.mp4 -c copy -map 0:v:0 -map 1:a:0 ${output}`);
+                    console.log("Adding audio");
+                    await exec(`ffmpeg -i temp/no-audio.mp4 -i input.mp4 -c copy -map 0:v:0 -map 1:a:0 ${output}`);
 
-        console.log("Cleaning up");
-        await fs.remove("temp");
+                    console.log("Cleaning up");
+                    await fs.remove("temp");
 
-    } catch (error) {
+                } catch (error) {
 
-        console.log("An error occurred:", error);
+                    console.log("An error occurred:", error);
 
-        if (debug === false) {
+                    if (debug === false) {
 
-            await fs.remove("temp");
+                        await fs.remove("temp");
 
-        }
+                    }
 
-    }
+                }
 
-})();
+}
 
 async function onFrame(frame, frameCount) {
 
@@ -114,12 +128,4 @@ async function onFrame(frame, frameCount) {
     }
 
     return frame;
-}
-
-
-    
-
-
-
-    
 }

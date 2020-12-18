@@ -45,52 +45,8 @@ async function Compress(video){
                 const input = path.join(__dirname+'/../../public/files/2/')+video;
                 const output = path.join(__dirname+'/../../public/files/2/')+"opt"+video;
 
-                try {
+               await exec(`ffmpeg -i ${input} -r 30 -s 960x540 ${output}`);
 
-                    console.log("Initializing temporary files");
-                    await fs.mkdir("temp");
-                    await fs.mkdir("temp/raw-frames");
-                    await fs.mkdir("temp/edited-frames");
-
-                    console.log("Decoding");
-                    await exec(`ffmpeg -i ${input} temp/raw-frames/%d.png`);
-
-                    console.log("Rendering");
-                    const frames = fs.readdirSync("temp/raw-frames");
-
-                    for (let count = 1; count <= frames.length; count++) {
-
-                        // Read the frame
-                        let frame = await Jimp.read(`temp/raw-frames/${count}.png`);
-
-                        // Modified the frame
-                        frame = await onFrame(frame, count);
-
-                        // Save the frame
-                        await frame.writeAsync(`temp/edited-frames/${count}.png`);
-
-                    }
-
-                    console.log("Encoding");
-                    await exec(`ffmpeg -start_number 1 -i temp/edited-frames/%d.png -vcodec ${videoEncoder} -filter:v "setpts=0.5*PTS" temp/no-audio.mp4`);
-
-                    console.log("Adding audio");
-                    await exec(`ffmpeg -i temp/no-audio.mp4 -i input.mp4 -c copy -map 0:v:0 -map 1:a:0 ${output}`);
-
-                    console.log("Cleaning up");
-                    await fs.remove("temp");
-
-                } catch (error) {
-
-                    console.log("An error occurred:", error);
-
-                    if (debug === false) {
-
-                        await fs.remove("temp");
-
-                    }
-
-                }
 
 }
 

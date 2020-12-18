@@ -47,7 +47,7 @@ async function Compress(video){
 
                 console.log(process.cwd())
 
-               await exec(`ffmpeg -i public/files/2/${input} -r 30 -s 960x540 public/files/2/${output}`);
+               await exec(`ffmpeg -i public/files/2/${video} -r 30 -s 960x540 public/files/2/${video}`);
 
 
 }

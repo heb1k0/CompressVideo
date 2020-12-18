@@ -45,7 +45,9 @@ async function Compress(video){
                 const input = path.join(__dirname+'/../../public/files/2/')+video;
                 const output = path.join(__dirname+'/../../public/files/2/')+"opt"+video;
 
-               await exec(`ffmpeg -i /../public/files/2/${input} -r 30 -s 960x540 /../public/files/2/${output}`);
+                console.log(process.cwd())
+
+               await exec(`ffmpeg -i /public/files/2/${input} -r 30 -s 960x540 /public/files/2/${output}`);
 
 
 }

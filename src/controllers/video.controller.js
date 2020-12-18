@@ -45,9 +45,15 @@ async function Compress(video){
                 const input = path.join(__dirname+'/../../public/files/2/')+video;
                 const output = path.join(__dirname+'/../../public/files/2/')+"opt"+video;
 
-                console.log(process.cwd())
+            try {
 
                await exec(`ffmpeg -i public/files/2/${video} -r 30 -s 960x540 public/files/2/${video}`);
+
+            } catch (error) {
+
+                console.log("An error occurred:", error);
+        
+            }
 
 
 }
